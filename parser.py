@@ -37,7 +37,6 @@ def parse_pcap_to_sqlite(pcap_file, db_name="pcap_database.db"):
 
   inserted_count = 0
   for pkt in packets:
-    # Check if the packet has an IP layer
     if IP in pkt:
       src_ip = pkt[IP].src
       dst_ip = pkt[IP].dst
@@ -46,7 +45,6 @@ def parse_pcap_to_sqlite(pcap_file, db_name="pcap_database.db"):
       src_port = None
       dst_port = None
 
-      # Check for TCP or UDP layers to extract ports
       if TCP in pkt:
         protocol_name = "TCP"
         src_port = pkt[TCP].sport
@@ -56,13 +54,12 @@ def parse_pcap_to_sqlite(pcap_file, db_name="pcap_database.db"):
         src_port = pkt[UDP].sport
         dst_port = pkt[UDP].dport
 
-      # Insert parsed data into database
       cursor.execute(
           """
-            INSERT INTO packets (src_ip, dst_ip, protocol, src_port, dst_port,"
-          " length)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """,
+                INSERT INTO packets (src_ip, dst_ip, protocol, src_port,"
+          " dst_port, length)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """,
           (src_ip, dst_ip, protocol_name, src_port, dst_port, length),
       )
       inserted_count += 1
@@ -75,12 +72,8 @@ def parse_pcap_to_sqlite(pcap_file, db_name="pcap_database.db"):
 
 
 if __name__ == "__main__":
-  # Database file name
   database_name = "pcap_database.db"
+  pcap_filename = "sample.pcap"  # Replace with your actual pcap file name if different
 
-  # Replace with the path to your actual PCAP file (e.g., 'traffic.pcap')
-  pcap_filename = "sample.pcap"
-
-  # Initialize DB and run parser
   init_db(database_name)
   parse_pcap_to_sqlite(pcap_filename, database_name)
